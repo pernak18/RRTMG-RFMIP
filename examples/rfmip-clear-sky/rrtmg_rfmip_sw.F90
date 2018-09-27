@@ -50,6 +50,7 @@ program rrtmgp_rfmip_sw
     read_and_block_lw_bc, read_and_block_sw_bc, read_kdist_gas_names
   use rrtmg_sw_rad
   use mo_gas_concentrations, only: ty_gas_concs, get_subset_range
+  use rrtmg_sw_init, only: rrtmg_sw_ini
 
   implicit none
   ! --------------------------------------------------
@@ -172,6 +173,10 @@ program rrtmgp_rfmip_sw
 
   ! Loop over blocks
   do b = 1, nblocks
+    if (b .ne. 1) then
+      cycle
+    endif
+
     error_msg = gas_conc_array(b)%get_vmr('h2o', h2o(:,:))
     error_msg = gas_conc_array(b)%get_vmr('co2', co2(:,:))
     error_msg = gas_conc_array(b)%get_vmr('o3', o3(:,:))
@@ -184,22 +189,30 @@ program rrtmgp_rfmip_sw
     usecol(1:block_size) = &
       solar_zenith_angle(:,b) < 90._wp - 2._wp * spacing(90._wp)
 
+!    print *, p_lay(1,1,b), p_lev(1,1,b), &
+!      t_lay(1,1,b), t_lev(1,1,b), t_sfc(1,b), &
+!      h2o(1,1), o3(1,1), co2(1,1), ch4(1,1), n2o(1,1), o2(1,1), &
+!      surface_albedo(1,b), cos(solar_zenith_angle(1,b))
+    
     ! RRTMG flux calculation; not sure if my defaults are entirely 
     ! correct (e.g., dyofyr, adjes, scon, isolve isolvar; see
     ! rrtmg_sw_rad.nomcica.f90 doc)
+    ! RRTMG inputs have to be surface to TOA
 
-!    call rrtmg_sw(block_size, nlay, dumInt, dumInt , &
-!      p_lay(:,:,b), p_lev(:,:,b), &
-!      t_lay(:,:,b), t_lev(:,:,b), t_sfc(:,b), &
-!      h2o, o3, co2, ch4, n2o, o2, &
-!      surface_albedo(:,b), surface_albedo(:,b), &
-!      surface_albedo(:,b), surface_albedo(:,b), &
-!      cos(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
-!      0, 0, 0, dum3D, &
-!      dum3D, dum3D, dum3D, dum3D, &
-!      dum3D, dum3D, dum2D, dum2D, &
-!      dum3D, dum3D, dum3D, dum3D, &
-!      swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc)
+    call rrtmg_sw_ini(1004.64_wp)
+    call rrtmg_sw(block_size, nlay, dumInt, dumInt , &
+      p_lay(:,nlay:1:-1,b), p_lev(:,nlay+1:1:-1,b), &
+      t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), &
+      h2o(:, nlay:1:-1), o3(:, nlay:1:-1), co2(:, nlay:1:-1), &
+      ch4(:, nlay:1:-1), n2o(:, nlay:1:-1), o2(:, nlay:1:-1), &
+      surface_albedo(:,b), surface_albedo(:,b), &
+      surface_albedo(:,b), surface_albedo(:,b), &
+      cos(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
+      0, 0, 0, dum3D, &
+      dum3D, dum3D, dum3D, dum3D, &
+      dum3D, dum3D, dum2D, dum2D, &
+      dum3D, dum3D, dum3D, dum3D, &
+      swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc)
 
 !    ! Normalize incoming solar flux to match RFMIP specification
 !    def_tsi(1:ncol) = sum(toa_flux, dim=2)
@@ -208,11 +221,13 @@ program rrtmgp_rfmip_sw
 !        toa_flux(icol,igpt) = toa_flux(icol,igpt) * total_solar_irradiance(icol,b)/def_tsi(icol)
 !      end do
 !    end do
-!  do icol = 1, block_size
-!    if(.not. usecol(icol)) then
-!      flux_up(icol,:,b)  = 0._wp
-!      flux_dn(icol,:,b)  = 0._wp
-!    end if
+  do icol = 1, block_size
+    if(.not. usecol(icol)) then
+      flux_up(icol,:,b)  = 0._wp
+      flux_dn(icol,:,b)  = 0._wp
+    end if
+  end do
+
   end do
 
   !call unblock_and_write(trim(flxup_file), 'rsu', flux_up)

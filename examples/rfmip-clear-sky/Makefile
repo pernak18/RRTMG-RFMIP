@@ -47,7 +47,8 @@ MADDITIONS += rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o
 MADDITIONS += rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o 
 MADDITIONS += rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o 
 MADDITIONS += rrsw_kg28.o rrsw_kg29.o
-MADDITIONS += rrtmg_sw_rad.o
+MADDITIONS += rrtmg_sw_rad.o rrtmg_sw_cldprmc.o rrtmg_sw_init.o
+MADDITIONS += rrtmg_sw_read_nc.o rrsw_ncpar.o
 
 all: rrtmgp_rfmip_lw rrtmgp_rfmip_sw rrtmg_rfmip_sw
 
@@ -71,6 +72,10 @@ mo_load_coefficients.o: mo_load_coefficients.F90 mo_simple_netcdf.o
 rrtmg_rfmip_sw:   rrtmg_rfmip_sw.o $(ADDITIONS) $(MADDITIONS)
 
 rrtmg_rfmip_sw.o: rrtmg_rfmip_sw.F90 $(ADDITIONS) $(MADDITIONS)
+
+rrtmg_sw_rad.o: rrtmg_sw_rad.f90 mcica_subcol_gen_sw.o rrtmg_sw_cldprmc.o rrtmg_sw_init.o
+
+rrtmg_sw_init.o: rrtmg_sw_init.f90 rrsw_con.o rrsw_wvn.o rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o rrsw_kg28.o rrsw_kg29.o rrtmg_sw_read_nc.o
 
 parkind.o: parkind.f90
 
@@ -104,37 +109,44 @@ rrtmg_sw_reftra.o: rrtmg_sw_reftra.f90
 
 rrtmg_sw_vrtqdr.o: rrtmg_sw_vrtqdr.f90
 
-rrsw_kg16.o: rrsw_kg16.f90 rrsw_kg16.o
+rrsw_kg16.o: rrsw_kg16.f90 rrsw_kg16.o rrsw_ncpar.o
 
-rrsw_kg17.o: rrsw_kg17.f90 rrsw_kg17.o
+rrsw_kg17.o: rrsw_kg17.f90 rrsw_kg17.o rrsw_ncpar.o
 
-rrsw_kg18.o: rrsw_kg18.f90 rrsw_kg18.o
+rrsw_kg18.o: rrsw_kg18.f90 rrsw_kg18.o rrsw_ncpar.o
 
-rrsw_kg19.o: rrsw_kg19.f90 rrsw_kg19.o
+rrsw_kg19.o: rrsw_kg19.f90 rrsw_kg19.o rrsw_ncpar.o
 
-rrsw_kg20.o: rrsw_kg20.f90 rrsw_kg20.o
+rrsw_kg20.o: rrsw_kg20.f90 rrsw_kg20.o rrsw_ncpar.o
 
-rrsw_kg21.o: rrsw_kg21.f90 rrsw_kg21.o
+rrsw_kg21.o: rrsw_kg21.f90 rrsw_kg21.o rrsw_ncpar.o
 
-rrsw_kg22.o: rrsw_kg22.f90 rrsw_kg22.o
+rrsw_kg22.o: rrsw_kg22.f90 rrsw_kg22.o rrsw_ncpar.o
 
-rrsw_kg23.o: rrsw_kg23.f90 rrsw_kg23.o
+rrsw_kg23.o: rrsw_kg23.f90 rrsw_kg23.o rrsw_ncpar.o
 
-rrsw_kg24.o: rrsw_kg24.f90 rrsw_kg24.o
+rrsw_kg24.o: rrsw_kg24.f90 rrsw_kg24.o rrsw_ncpar.o
 
-rrsw_kg25.o: rrsw_kg25.f90 rrsw_kg25.o
+rrsw_kg25.o: rrsw_kg25.f90 rrsw_kg25.o rrsw_ncpar.o
 
-rrsw_kg26.o: rrsw_kg26.f90 rrsw_kg26.o
+rrsw_kg26.o: rrsw_kg26.f90 rrsw_kg26.o rrsw_ncpar.o
 
-rrsw_kg27.o: rrsw_kg27.f90 rrsw_kg27.o
+rrsw_kg27.o: rrsw_kg27.f90 rrsw_kg27.o rrsw_ncpar.o
 
-rrsw_kg28.o: rrsw_kg28.f90 rrsw_kg28.o
+rrsw_kg28.o: rrsw_kg28.f90 rrsw_kg28.o rrsw_ncpar.o
 
-rrsw_kg29.o: rrsw_kg29.f90 rrsw_kg29.o
+rrsw_kg29.o: rrsw_kg29.f90 rrsw_kg29.o rrsw_ncpar.o
+
+rrsw_ncpar.o: rrsw_ncpar.f90
 
 mcica_random_numbers.o: mcica_random_numbers.f90
 
-rrtmg_sw_rad.o: rrtmg_sw_rad.nomcica.f90
+rrtmg_sw_read_nc.o: rrtmg_sw_read_nc.f90 rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o rrsw_kg28.o rrsw_kg29.o rrsw_ncpar.o
+
+rrtmg: clean rrtmg_rfmip_sw tidy
+
+tidy:
+	-mv -f *.o dep; mv -f *.mod dep
 
 clean:
-	-rm rrtmgp_rfmip_lw rrtmg_rfmip_sw rrtmgp_rfmip_sw *.o *.mod *.optrpt ../*.optrpt
+	-rm rrtmgp_rfmip_lw rrtmg_rfmip_sw rrtmgp_rfmip_sw dep/*.o dep/*.mod
