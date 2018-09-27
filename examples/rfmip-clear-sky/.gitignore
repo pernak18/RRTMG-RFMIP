@@ -3,5 +3,5 @@
 coefficients_sw.nc
 multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-0-4_none.nc
 rrtmg_rfmip_sw
-dep/*
+dep/*.*
 
