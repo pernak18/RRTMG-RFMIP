@@ -44,6 +44,7 @@ program rrtmg_rfmip_lw
   !
   ! Working precision for real variables
   !
+  use parkind,               only: rb => kind_rb
   use mo_rte_kind,           only: wp
   use mo_rfmip_io,           only: read_size, read_and_block_pt, &
     read_and_block_gases_ty, unblock_and_write, &
@@ -71,6 +72,7 @@ program rrtmg_rfmip_lw
   ! block_size, nlay, nblocks
   real(wp), dimension(:,:,:), allocatable :: &
     p_lay, p_lev, t_lay, t_lev, dum3D
+  real(kind=rb)              :: cpdair = 1004.64
 
   ! block_size, nlay (nlev for HR)
   real(wp), dimension(:,:), allocatable :: &
@@ -167,9 +169,7 @@ program rrtmg_rfmip_lw
     taucmcl(ngpt, block_size, nlay), ciwpmcl(ngpt, block_size, nlay), &
     clwpmcl(ngpt, block_size, nlay), tauaer(block_size, nlay, ngpt))
 
-  allocate(emiss_sfc(block_size, nblocks), &
-    t_sfc(block_size, nblocks), &
-    reicmcl(block_size, nlay), relqmcl(block_size, nlay), &
+  allocate(reicmcl(block_size, nlay), relqmcl(block_size, nlay), &
     hr(block_size, nlay), uflxc(block_size, nlay+1), &
     dflxc(block_size, nlay+1), hrc(block_size, nlay), &
     duflx_dt(block_size, nlay+1), duflxc_dt(block_size, nlay+1))
@@ -183,8 +183,6 @@ program rrtmg_rfmip_lw
   reicmcl(:,:) = 0._wp
   relqmcl(:,:) = 0._wp
   hr(:,:) = 0._wp
-  uflxc(:,:) = 0._wp
-  dflxc(:,:) = 0._wp
   hrc(:,:) = 0._wp
   duflx_dt(:,:) = 0._wp
   duflxc_dt(:,:) = 0._wp
@@ -195,7 +193,7 @@ program rrtmg_rfmip_lw
   tauaer(:,:,:) = 0._wp
 
   ! Loop over blocks
-  call rrtmg_sw_ini(1004.64_wp)
+  call rrtmg_lw_ini(1004.64_wp)
   do b = 1, nblocks
     if (b .ne. 1) then
       cycle
@@ -210,24 +208,17 @@ program rrtmg_rfmip_lw
     error_msg = gas_conc_array(b)%get_vmr('o2', o2(:,:))
     error_msg = gas_conc_array(b)%get_vmr('n2', n2(:,:))
 
-    call rrtmg_lw_ini(1004.64_wp)
-    call rrtmg_lw(block_size, nlay, 0, 0, &
-      p_lay(:,:,b)/100.0, p_lev(:,:,b)/100.0, &
-      t_lay(:,:,b), t_lev(:,:,b), t_sfc(:,b), & 
+    call rrtmg_lw_ini(cpdair)
+    call rrtmg_lw(block_size, nlay, dumInt, 0, &
+      p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
+      t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), & 
       h2o, o3, co2, ch4, n2o, o2, &
       cfc11, cfc12, cfc22, ccl4, emiss_sfc, &
       0, 0, 0, cldfmcl, &
       taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl, tauaer, &
       flux_up(:,:,b), flux_dn(:,:,b), hr, uflxc, dflxc, hrc, &
       duflx_dt, duflxc_dt)
-
-!  do icol = 1, block_size
-!    if(.not. usecol(icol)) then
-!      flux_up(icol,:,b)  = 0._wp
-!      flux_dn(icol,:,b)  = 0._wp
-!    end if
-!  end do
-
+    print *, uflxc
   end do
 
   !call unblock_and_write(trim(flxup_file), 'rsu', flux_up)
