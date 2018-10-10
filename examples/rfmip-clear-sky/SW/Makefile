@@ -34,17 +34,7 @@ VPATH = ../../:../:./rrtmg_modules/:./rrtmg_src/:
 ADDITIONS := mo_simple_netcdf.o mo_rfmip_io.o mo_load_coefficients.o
 
 # RRTMGP driver and RFMIP code
-rrtmgp: rrtmgp_rfmip_lw rrtmgp_rfmip_sw
-
-rrtmgp_rfmip_lw:   rrtmgp_rfmip_lw.o   $(ADDITIONS)
-
-rrtmgp_rfmip_lw.o: rrtmgp_rfmip_lw.F90 $(ADDITIONS)
-
-rrtmgp_rfmip_sw:   rrtmgp_rfmip_sw.o   $(ADDITIONS)
-
-rrtmgp_rfmip_sw.o: rrtmgp_rfmip_sw.F90 $(ADDITIONS)
-
-mo_rfmip_io.o:          mo_rfmip_io.F90          mo_simple_netcdf.o
+mo_rfmip_io.o: mo_rfmip_io.F90 mo_simple_netcdf.o
 
 mo_load_coefficients.o: mo_load_coefficients.F90 mo_simple_netcdf.o
 
@@ -138,38 +128,8 @@ rrtmg_sw_read_nc.o: rrtmg_sw_read_nc.f90 rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrs
 
 rrtmg_sw: clean rrtmg_rfmip_sw tidy
 
-# LW RRTMG
-
-LWADDITIONS := rrtmg_rfmip_lw.o 
-LWADDITIONS += extra.o mcica_random_numbers.o
-LWADDITIONS += mcica_subcol_gen_lw.1col.o parkind.o parrrtm.o 
-LWADDITIONS += rrlw_cld.o rrlw_con.o rrlw_kg01.o rrlw_kg02.o 
-LWADDITIONS += rrlw_kg03.o rrlw_kg04.o rrlw_kg05.o rrlw_kg06.o 
-LWADDITIONS += rrlw_kg07.o rrlw_kg08.o rrlw_kg09.o rrlw_kg10.o
-LWADDITIONS += rrlw_kg11.o rrlw_kg12.o rrlw_kg13.o rrlw_kg14.o
-LWADDITIONS += rrlw_kg15.o rrlw_kg16.o rrlw_ref.o rrlw_tbl.o
-LWADDITIONS += rrlw_vsn.o rrlw_wvn.o rrtatm.o rrtmg_lw_cldprmc.o
-LWADDITIONS += rrtmg_lw_init.o rrtmg_lw_cldprop.o rrtmg_lw_rad.o
-LWADDITIONS += rrtmg_lw_rad.o rrtmg_lw_rtrnmc.o rrtmg_lw_rtrnmr.o
-LWADDITIONS += rrtmg_lw_rtrn.o rrtmg_lw_setcoef.o rrtmg_lw_taumol.o
-LWADDITIONS += util_linux_ifort.o
-
-rrtmg_rfmip_lw: rrtmg_rfmip_lw.o $(ADDITIONS) $(LWADDITIONS)
-
-rrtmg_rfmip_lw.o: rrtmg_rfmip_lw.F90 $(ADDITIONS) $(LWADDITIONS)
-
-# rrtmg_lw_k_g.o: rrtmg_lw_k_g.f90 $(LWADDITIONS)
-
-rrtmg_lw_rad.o: rrtmg_lw_rad.f90 
-
-rrtmg_lw_init.o: rrtmg_lw_init.f90 $(LWADDITIONS)
-
-rrtmg_lw: clean rrtmg_rfmip_lw tidy
-
-rrtmg: rrtmg_sw rrtmg_lw
-
 tidy:
 	-mv -f *.o dep; mv -f *.mod dep
 
 clean:
-	-rm rrtmgp_rfmip_lw rrtmg_rfmip_sw rrtmgp_rfmip_sw dep/*.o dep/*.mod
+	-rm rrtmg_rfmip_sw dep/*.o dep/*.mod
