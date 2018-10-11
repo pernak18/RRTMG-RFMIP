@@ -52,6 +52,9 @@ program rrtmg_rfmip_lw
   use mo_gas_concentrations, only: ty_gas_concs, get_subset_range
   use rrtmg_lw_rad,          only: rrtmg_lw
   use rrtmg_lw_init,         only: rrtmg_lw_ini
+  use rrlw_con, only: heatfac, grav, planck, boltz, &
+    clight, avogad, alosmt, gascon, radcn1, radcn2, &
+    sbcnst, secdy , fluxfac
 
   implicit none
   ! --------------------------------------------------
@@ -87,7 +90,6 @@ program rrtmg_rfmip_lw
     duflx_dt, duflxc_dt
 
   real(wp), dimension(:,:,:), allocatable :: flux_up, flux_dn, &
-    lay_src, lev_src_dec, lev_src_inc, &
     cldfmcl, taucmcl, ciwpmcl, clwpmcl, tauaer
   real(wp), dimension(:,:), allocatable :: & ! block_size, nblocks
     emiss_sfc, t_sfc, conc
@@ -193,7 +195,7 @@ program rrtmg_rfmip_lw
   tauaer(:,:,:) = 0._wp
 
   ! Loop over blocks
-  call rrtmg_lw_ini(1004.64_wp)
+  call rrtmg_lw_ini(cpdair)
   do b = 1, nblocks
     if (b .ne. 1) then
       cycle
@@ -208,17 +210,17 @@ program rrtmg_rfmip_lw
     error_msg = gas_conc_array(b)%get_vmr('o2', o2(:,:))
     error_msg = gas_conc_array(b)%get_vmr('n2', n2(:,:))
 
-    call rrtmg_lw_ini(cpdair)
     call rrtmg_lw(block_size, nlay, dumInt, 0, &
       p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
       t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), & 
-      h2o, o3, co2, ch4, n2o, o2, &
+      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1), &
+      ch4(:,nlay:1:-1), n2o(:,nlay:1:-1), o2(:,nlay:1:-1), &
       cfc11, cfc12, cfc22, ccl4, emiss_sfc, &
       0, 0, 0, cldfmcl, &
       taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl, tauaer, &
       flux_up(:,:,b), flux_dn(:,:,b), hr, uflxc, dflxc, hrc, &
       duflx_dt, duflxc_dt)
-    print *, uflxc
+    print *, flux_dn(:,1,b)
   end do
 
   !call unblock_and_write(trim(flxup_file), 'rsu', flux_up)

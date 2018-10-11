@@ -50,7 +50,7 @@ SWADDITIONS += rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o
 SWADDITIONS += rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o 
 SWADDITIONS += rrsw_kg28.o rrsw_kg29.o
 SWADDITIONS += rrtmg_sw_rad.o rrtmg_sw_cldprmc.o rrtmg_sw_init.o
-SWADDITIONS += rrtmg_sw_read_nc.o rrsw_ncpar.o
+SWADDITIONS += rrtmg_sw_k_g.o rrsw_ncpar.o
 
 rrtmg_rfmip_sw:   rrtmg_rfmip_sw.o $(ADDITIONS) $(SWADDITIONS)
 
@@ -124,7 +124,7 @@ rrsw_ncpar.o: rrsw_ncpar.f90
 
 mcica_random_numbers.o: mcica_random_numbers.f90 parkind.o
 
-rrtmg_sw_read_nc.o: rrtmg_sw_read_nc.f90 rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o rrsw_kg28.o rrsw_kg29.o rrsw_ncpar.o
+rrtmg_sw_k_g.o: rrtmg_sw_k_g.f90 rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o rrsw_kg28.o rrsw_kg29.o rrsw_ncpar.o
 
 rrtmg_sw: clean rrtmg_rfmip_sw tidy
 

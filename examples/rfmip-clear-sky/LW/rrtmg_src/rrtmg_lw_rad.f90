@@ -448,9 +448,9 @@
 !
 ! Initializations
 
-!      oneminus = 1._rb - 1.e-6_rb
-!      pi = 2._rb * asin(1._rb)
-!      fluxfac = pi * 2.e4_rb                  ! orig:   fluxfac = pi * 2.d4  
+      oneminus = 1._rb - 1.e-6_rb
+      pi = 2._rb * asin(1._rb)
+      fluxfac = pi * 2.e4_rb                  ! orig:   fluxfac = pi * 2.d4  
       istart = 1
       iend = 16
       iout = 0
