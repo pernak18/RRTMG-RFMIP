@@ -58,7 +58,7 @@ rrtmg_rfmip_sw.o: rrtmg_rfmip_sw.F90 $(ADDITIONS) $(SWADDITIONS)
 
 rrtmg_sw_rad.o: rrtmg_sw_rad.f90 mcica_subcol_gen_sw.o rrtmg_sw_cldprmc.o rrtmg_sw_init.o
 
-rrtmg_sw_init.o: rrtmg_sw_init.f90 rrsw_con.o rrsw_wvn.o rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o rrsw_kg28.o rrsw_kg29.o rrtmg_sw_read_nc.o
+rrtmg_sw_init.o: rrtmg_sw_init.f90 rrsw_con.o rrsw_wvn.o rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o rrsw_kg20.o rrsw_kg21.o rrsw_kg22.o rrsw_kg23.o rrsw_kg24.o rrsw_kg25.o rrsw_kg26.o rrsw_kg27.o rrsw_kg28.o rrsw_kg29.o rrtmg_sw_k_g.o
 
 parkind.o: parkind.f90
 

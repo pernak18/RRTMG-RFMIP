@@ -37,7 +37,7 @@ end subroutine stop_on_err
 ! Main program
 !
 ! -------------------------------------------------------------------------------------------------
-program rrtmgp_rfmip_sw
+program rrtmg_rfmip_sw
   ! --------------------------------------------------
   !
   ! Modules for working with rte and rrtmgp
@@ -63,7 +63,8 @@ program rrtmgp_rfmip_sw
   integer :: nargs, ncol, nlay, nexp, nblocks, block_size, &
     dumInt=0, ngpt=16
   logical :: top_at_1
-  integer :: b, icol, igpt, nband=1
+  integer :: b, icol, igpt, ilev, nband=1
+  real(wp) :: tsi_scale
   character(len=6) :: block_size_char
 
   character(len=32 ), dimension(:), allocatable :: gases_to_use
@@ -86,8 +87,6 @@ program rrtmgp_rfmip_sw
     surface_albedo, total_solar_irradiance, solar_zenith_angle, &
     emiss_sfc, t_sfc, conc
 
-  real(wp), dimension(:,:), allocatable :: toa_flux ! block_size, ngpt
-  real(wp), dimension(:  ), allocatable :: def_tsi ! block_size
   logical , dimension(:  ), allocatable :: usecol ! block_size
 
   type(ty_gas_concs), dimension(:), allocatable  :: gas_conc_array
@@ -140,8 +139,7 @@ program rrtmgp_rfmip_sw
 
   allocate(flux_up(block_size, nlay+1, nblocks), &
     flux_dn(block_size, nlay+1, nblocks))
-  allocate(toa_flux(block_size, ngpt), def_tsi(block_size), &
-    usecol(block_size))
+  allocate(usecol(block_size))
 
   ! RRTMG output arrays
   allocate(swuflx(block_size, nlay+1), swdflx(block_size, nlay+1), &
@@ -174,10 +172,6 @@ program rrtmgp_rfmip_sw
   ! Loop over blocks
   call rrtmg_sw_ini(1004.64_wp)
   do b = 1, nblocks
-    if (b .ne. 1) then
-      cycle
-    endif
-
     error_msg = gas_conc_array(b)%get_vmr('h2o', h2o(:,:))
     error_msg = gas_conc_array(b)%get_vmr('co2', co2(:,:))
     error_msg = gas_conc_array(b)%get_vmr('o3', o3(:,:))
@@ -190,11 +184,6 @@ program rrtmgp_rfmip_sw
     usecol(1:block_size) = &
       solar_zenith_angle(:,b) < 90._wp - 2._wp * spacing(90._wp)
 
-!    print *, p_lay(1,1,b), p_lev(1,1,b), &
-!      t_lay(1,1,b), t_lev(1,1,b), t_sfc(1,b), &
-!      h2o(1,1), o3(1,1), co2(1,1), ch4(1,1), n2o(1,1), o2(1,1), &
-!      surface_albedo(1,b), cos(solar_zenith_angle(1,b))
-    
     ! RRTMG flux calculation; not sure if my defaults are entirely 
     ! correct (e.g., dyofyr, adjes, scon, isolve isolvar; see
     ! rrtmg_sw_rad.f90 doc)
@@ -203,33 +192,41 @@ program rrtmgp_rfmip_sw
     call rrtmg_sw(block_size, nlay, dumInt, dumInt , &
       p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
       t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), &
-      h2o(:, nlay:1:-1), o3(:, nlay:1:-1), co2(:, nlay:1:-1), &
-      ch4(:, nlay:1:-1), n2o(:, nlay:1:-1), o2(:, nlay:1:-1), &
+      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1)/1e6, &
+      ch4(:,nlay:1:-1)/1e9, n2o(:,nlay:1:-1)/1e9, o2(:,nlay:1:-1), &
       surface_albedo(:,b), surface_albedo(:,b), &
       surface_albedo(:,b), surface_albedo(:,b), &
-      cos(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
+      cosd(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
       0, 0, 0, dum3D, &
       dum3D, dum3D, dum3D, dum3D, &
       dum3D, dum3D, dum2D, dum2D, &
       dum3D, dum3D, dum3D, dum3D, &
-      swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc)
+      flux_up(:,:,b), flux_dn(:,:,b), swhr, swuflxc, swdflxc, swhrc)
 
-!    ! Normalize incoming solar flux to match RFMIP specification
-!    def_tsi(1:ncol) = sum(toa_flux, dim=2)
-!    do igpt = 1, k_dist%get_ngpt()
-!      do icol = 1, block_size
-!        toa_flux(icol,igpt) = toa_flux(icol,igpt) * total_solar_irradiance(icol,b)/def_tsi(icol)
-!      end do
-!    end do
-  do icol = 1, block_size
-    if(.not. usecol(icol)) then
-      flux_up(icol,:,b)  = 0._wp
-      flux_dn(icol,:,b)  = 0._wp
-    end if
-  end do
+    do icol = 1, block_size
+      ! zero out dayttime profile fluxes
+      if(.not. usecol(icol)) then
+        flux_up(icol,:,b)  = 0._wp
+        flux_dn(icol,:,b)  = 0._wp
+        cycle
+      end if
 
-  end do
+      ! got the 1360.85 from Eli:
+      ! https://rrtmgp2.slack.com/archives/D942AU7QE/p1525442449000187
+!      tsi_scale = total_solar_irradiance(icol,b) / 1360.85
 
-  !call unblock_and_write(trim(flxup_file), 'rsu', flux_up)
-  !call unblock_and_write(trim(flxdn_file), 'rsd', flux_dn)
-end program rrtmgp_rfmip_sw
+!      do ilev = 1, nlay+1
+!        flux_up(iCol, ilev, b) = flux_up(iCol, ilev, b) / tsi_scale
+!        flux_dn(iCol, ilev, b) = flux_dn(iCol, ilev, b) / tsi_scale
+!      enddo ! levels
+    end do ! columns
+
+  end do ! blocks
+
+  call unblock_and_write(trim(flxup_file), 'rsu', &
+    flux_up(:, nlay+1:1:-1, :))
+  call unblock_and_write(trim(flxdn_file), 'rsd', &
+    flux_dn(:, nlay+1:1:-1, :))
+
+end program rrtmg_rfmip_sw
+

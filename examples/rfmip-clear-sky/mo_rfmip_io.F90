@@ -163,11 +163,11 @@ contains
     if(nf90_open(trim(fileName), NF90_NOWRITE, ncid) /= NF90_NOERR) &
       call stop_on_err("read_and_block_sw_bc: can't find file " // trim(fileName))
 
-    surface_albedo         = reshape(spread(read_field(ncid, "surface_albedo",         ncol_l), dim=1, ncopies=nexp_l), &
+    surface_albedo         = reshape(spread(read_field(ncid, "surface_albedo",         ncol_l), dim=2, ncopies=nexp_l), &
                                      shape = [blocksize, nblocks])
-    total_solar_irradiance = reshape(spread(read_field(ncid, "total_solar_irradiance", ncol_l), dim=1, ncopies=nexp_l), &
+    total_solar_irradiance = reshape(spread(read_field(ncid, "total_solar_irradiance", ncol_l), dim=2, ncopies=nexp_l), &
                                     shape = [blocksize, nblocks])
-    solar_zenith_angle     = reshape(spread(read_field(ncid, "solar_zenith_angle",     ncol_l), dim=1, ncopies=nexp_l), &
+    solar_zenith_angle     = reshape(spread(read_field(ncid, "solar_zenith_angle",     ncol_l), dim=2, ncopies=nexp_l), &
                                      shape = [blocksize, nblocks])
 
     ncid = nf90_close(ncid)
@@ -198,9 +198,9 @@ contains
     if(nf90_open(trim(fileName), NF90_NOWRITE, ncid) /= NF90_NOERR) &
       call stop_on_err("read_and_block_lw_bc: can't find file " // trim(fileName))
 
-    surface_emissivity  = reshape(spread(read_field(ncid, "surface_emissivity",  ncol_l), dim=1, ncopies=nexp_l), &
+    surface_emissivity  = reshape(spread(read_field(ncid, "surface_emissivity",  ncol_l), dim=2, ncopies=nexp_l), &
                                   shape = [blocksize, nblocks])
-    surface_temperature = reshape(spread(read_field(ncid, "surface_temperature", ncol_l), dim=1, ncopies=nexp_l), &
+    surface_temperature = reshape(spread(read_field(ncid, "surface_temperature", ncol_l), dim=2, ncopies=nexp_l), &
                                   shape = [blocksize, nblocks])
 
     ncid = nf90_close(ncid)
@@ -264,7 +264,7 @@ contains
     nblocks = (ncol_l*nexp_l)/blocksize
     allocate(gas_conc_array(nblocks))
     ! Experiment index for each colum
-    exp_num = reshape(spread([(b, b = 1, nexp_l)], 1, ncopies = ncol_l), shape = [blocksize, nblocks])
+    exp_num = reshape(spread([(b, b = 1, nexp_l)], 1, ncopies = ncol_l), shape = [blocksize, nblocks], order=[1,2])
 
     if(nf90_open(trim(fileName), NF90_NOWRITE, ncid) /= NF90_NOERR) &
       call stop_on_err("read_and_block_gases_ty: can't find file " // trim(fileName))

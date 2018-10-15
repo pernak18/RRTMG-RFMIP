@@ -197,10 +197,6 @@ program rrtmg_rfmip_lw
   ! Loop over blocks
   call rrtmg_lw_ini(cpdair)
   do b = 1, nblocks
-    if (b .ne. 1) then
-      cycle
-    endif
-
     error_msg = gas_conc_array(b)%get_vmr('h2o', h2o(:,:))
     error_msg = gas_conc_array(b)%get_vmr('co2', co2(:,:))
     error_msg = gas_conc_array(b)%get_vmr('o3', o3(:,:))
@@ -213,16 +209,15 @@ program rrtmg_rfmip_lw
     call rrtmg_lw(block_size, nlay, dumInt, 0, &
       p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
       t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), & 
-      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1), &
-      ch4(:,nlay:1:-1), n2o(:,nlay:1:-1), o2(:,nlay:1:-1), &
+      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1)/1e6, &
+      ch4(:,nlay:1:-1)/1e9, n2o(:,nlay:1:-1)/1e9, o2(:,nlay:1:-1), &
       cfc11, cfc12, cfc22, ccl4, emiss_sfc, &
       0, 0, 0, cldfmcl, &
       taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl, tauaer, &
       flux_up(:,:,b), flux_dn(:,:,b), hr, uflxc, dflxc, hrc, &
       duflx_dt, duflxc_dt)
-    print *, flux_dn(:,1,b)
   end do
 
-  !call unblock_and_write(trim(flxup_file), 'rsu', flux_up)
-  !call unblock_and_write(trim(flxdn_file), 'rsd', flux_dn)
+  call unblock_and_write(trim(flxup_file), 'rlu', flux_up)
+  call unblock_and_write(trim(flxdn_file), 'rld', flux_dn)
 end program rrtmg_rfmip_lw
