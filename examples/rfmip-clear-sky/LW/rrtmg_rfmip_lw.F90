@@ -221,8 +221,8 @@ program rrtmg_rfmip_lw
     call rrtmg_lw(block_size, nlay, dumInt, 0, &
       p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
       t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), & 
-      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1)/1e6, &
-      ch4(:,nlay:1:-1)/1e9, n2o(:,nlay:1:-1)/1e9, o2(:,nlay:1:-1), &
+      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1), &
+      ch4(:,nlay:1:-1), n2o(:,nlay:1:-1), o2(:,nlay:1:-1), &
       cfc11, cfc12, cfc22, ccl4, emiss_sfc, &
       0, 0, 0, cldfmcl, &
       taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl, tauaer, &
