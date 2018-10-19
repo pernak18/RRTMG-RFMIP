@@ -12,11 +12,14 @@ FCINCLUDE += -I$(RRTMGP_DIR)
 # netcdf library, module files
 # C and Fortran interfaces respectively
 #
+# Timing library (apparently v5.5.3 extension matters)
+TIME_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git/examples/rfmip-clear-sky/GPTL-v5.5.3
+
 NCHOME = /nas/project/p1770/dependencies
 NFHOME = /nas/project/p1770/dependencies
-FCINCLUDE += -I$(NFHOME)/include
-LDFLAGS   += -L$(NFHOME)/lib -L$(NCHOME)/lib
-LIBS      += -lnetcdff -lnetcdf
+FCINCLUDE += -I$(NFHOME)/include -I$(TIME_DIR)/include
+LDFLAGS   += -L$(NFHOME)/lib -L$(NCHOME)/lib -L$(TIME_DIR)/lib
+LIBS      += -lnetcdff -lnetcdf -lgptl
 
 VPATH = ../../:../:./rrtmg_modules/:./rrtmg_src/:
 

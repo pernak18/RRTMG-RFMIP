@@ -52,6 +52,10 @@ program rrtmg_rfmip_sw
   use rrtmg_sw_rad,          only: rrtmg_sw
   use rrtmg_sw_init,         only: rrtmg_sw_ini
 
+  ! Timing library
+  use gptl, only: gptlstart, gptlstop, gptlinitialize, gptlpr, &
+    gptlfinalize, gptlsetoption, gptlpercent, gptloverhead
+
   implicit none
   ! --------------------------------------------------
   !
@@ -60,7 +64,7 @@ program rrtmg_rfmip_sw
   character(len=132) :: rfmip_file, &
     kdist_file = 'coefficients_sw.nc', &
     flxdn_file = 'rsd_template.nc', flxup_file = 'rsu_template.nc'
-  integer :: nargs, ncol, nlay, nexp, nblocks, block_size, &
+  integer :: nargs, ncol, nlay, nexp, nblocks, block_size, ret, &
     dumInt=0, ngpt=16
   logical :: top_at_1
   integer :: b, icol, igpt, ilev, nband=1
@@ -169,6 +173,13 @@ program rrtmg_rfmip_sw
   dum2D(:,:) = 0._wp
   dum3D(:,:,:) = 0._wp
 
+  ! Initialize timers
+  ! Turn on "% of" print
+  ret = gptlsetoption (gptlpercent, 1)
+  ! Turn off overhead estimate
+  ret = gptlsetoption (gptloverhead, 0)
+  ret =  gptlinitialize()
+
   ! Loop over blocks
   call rrtmg_sw_ini(1004.64_wp)
   do b = 1, nblocks
@@ -189,11 +200,12 @@ program rrtmg_rfmip_sw
     ! rrtmg_sw_rad.f90 doc)
     ! RRTMG inputs have to be surface to TOA
 
+    ret =  gptlstart('RRTMG (SW)')
     call rrtmg_sw(block_size, nlay, dumInt, dumInt , &
       p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
       t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), &
-      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1)/1e6, &
-      ch4(:,nlay:1:-1)/1e9, n2o(:,nlay:1:-1)/1e9, o2(:,nlay:1:-1), &
+      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1), &
+      ch4(:,nlay:1:-1), n2o(:,nlay:1:-1), o2(:,nlay:1:-1), &
       surface_albedo(:,b), surface_albedo(:,b), &
       surface_albedo(:,b), surface_albedo(:,b), &
       cosd(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
@@ -202,6 +214,7 @@ program rrtmg_rfmip_sw
       dum3D, dum3D, dum2D, dum2D, &
       dum3D, dum3D, dum3D, dum3D, &
       flux_up(:,:,b), flux_dn(:,:,b), swhr, swuflxc, swdflxc, swhrc)
+    ret =  gptlstop('RRTMG (SW)')
 
     do icol = 1, block_size
       ! zero out dayttime profile fluxes
@@ -222,6 +235,10 @@ program rrtmg_rfmip_sw
     end do ! columns
 
   end do ! blocks
+
+  ! End timers
+  ret = gptlpr(block_size)
+  ret = gptlfinalize()
 
   call unblock_and_write(trim(flxup_file), 'rsu', &
     flux_up(:, nlay+1:1:-1, :))
