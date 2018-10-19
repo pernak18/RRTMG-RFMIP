@@ -56,6 +56,10 @@ program rrtmg_rfmip_lw
     clight, avogad, alosmt, gascon, radcn1, radcn2, &
     sbcnst, secdy , fluxfac
 
+  ! Timing library
+  use gptl, only: gptlstart, gptlstop, gptlinitialize, gptlpr, &
+    gptlfinalize, gptlsetoption, gptlpercent, gptloverhead
+
   implicit none
   ! --------------------------------------------------
   !
@@ -64,7 +68,7 @@ program rrtmg_rfmip_lw
   character(len=132) :: rfmip_file, &
     kdist_file = 'coefficients_lw.nc', &
     flxdn_file = 'rld_template.nc', flxup_file = 'rlu_template.nc'
-  integer :: nargs, ncol, nlay, nexp, nblocks, block_size, &
+  integer :: nargs, ncol, nlay, nexp, nblocks, block_size, ret, &
     dumInt=0, ngpt=16
   logical :: top_at_1
   integer :: b, icol, igpt, nband=1
@@ -194,6 +198,13 @@ program rrtmg_rfmip_lw
   clwpmcl(:,:,:) = 0._wp
   tauaer(:,:,:) = 0._wp
 
+  ! Initialize timers
+  ! Turn on "% of" print
+  ret = gptlsetoption (gptlpercent, 1)
+  ! Turn off overhead estimate
+  ret = gptlsetoption (gptloverhead, 0)
+  ret =  gptlinitialize()
+
   ! Loop over blocks
   call rrtmg_lw_ini(cpdair)
   do b = 1, nblocks
@@ -206,6 +217,7 @@ program rrtmg_rfmip_lw
     error_msg = gas_conc_array(b)%get_vmr('o2', o2(:,:))
     error_msg = gas_conc_array(b)%get_vmr('n2', n2(:,:))
 
+    ret =  gptlstart('RRTMG (LW)')
     call rrtmg_lw(block_size, nlay, dumInt, 0, &
       p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
       t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), & 
@@ -216,7 +228,12 @@ program rrtmg_rfmip_lw
       taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl, tauaer, &
       flux_up(:,:,b), flux_dn(:,:,b), hr, uflxc, dflxc, hrc, &
       duflx_dt, duflxc_dt)
+    ret =  gptlstop('RRTMG (LW)')
   end do
+
+  ! End timers
+  ret = gptlpr(block_size)
+  ret = gptlfinalize()
 
   call unblock_and_write(trim(flxup_file), 'rlu', flux_up)
   call unblock_and_write(trim(flxdn_file), 'rld', flux_dn)
