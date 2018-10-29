@@ -208,7 +208,7 @@ program rrtmg_rfmip_sw
       ch4(:,nlay:1:-1), n2o(:,nlay:1:-1), o2(:,nlay:1:-1), &
       surface_albedo(:,b), surface_albedo(:,b), &
       surface_albedo(:,b), surface_albedo(:,b), &
-      cosd(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
+      cosd(solar_zenith_angle(:,b)), 1._wp, 0, 0._wp, 0, &
       0, 0, 0, dum3D, &
       dum3D, dum3D, dum3D, dum3D, &
       dum3D, dum3D, dum2D, dum2D, &
@@ -226,12 +226,14 @@ program rrtmg_rfmip_sw
 
       ! got the 1360.85 from Eli:
       ! https://rrtmgp2.slack.com/archives/D942AU7QE/p1525442449000187
-!      tsi_scale = total_solar_irradiance(icol,b) / 1360.85
+      ! it's also the solar constant used in RRTMG with scon = 0 and 
+      ! isolvar = 0
+      tsi_scale = total_solar_irradiance(icol,b) / 1360.85
 
-!      do ilev = 1, nlay+1
-!        flux_up(iCol, ilev, b) = flux_up(iCol, ilev, b) / tsi_scale
-!        flux_dn(iCol, ilev, b) = flux_dn(iCol, ilev, b) / tsi_scale
-!      enddo ! levels
+      do ilev = 1, nlay+1
+        flux_up(iCol, ilev, b) = flux_up(iCol, ilev, b) * tsi_scale
+        flux_dn(iCol, ilev, b) = flux_dn(iCol, ilev, b) * tsi_scale
+      enddo ! levels
     end do ! columns
 
   end do ! blocks
