@@ -132,6 +132,15 @@ program rrtmg_rfmip_lw
 
   ! RRTMG needs surface T
   call read_and_block_lw_bc(rfmip_file, block_size, emiss_sfc, t_sfc)
+  ! RRTMG LW expects ncol x nband surface emissivity, but we have 
+  ! been providing it with block_size x nblocks; this worked for 
+  ! block sizes of 4, 8, and 100 with RFMIP's constant emissivity of 
+  ! 0.98, but a block size of 1800 crashes the program because the 
+  ! nblocks dimension is on 1, and RRTMG loops over more than 1 band
+  ! (it loops over 16). this hack will work for now
+  deallocate(emiss_sfc)
+  allocate(emiss_sfc(block_size, 16))
+  emiss_sfc(:,:) = 0.98_wp
 
   ! are we going surface to TOA or TOA to surface?
   top_at_1 = p_lay(1, 1, 1) < p_lay(1, nlay, 1)
