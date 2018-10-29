@@ -89,9 +89,7 @@ program rrtmg_rfmip_sw
   real(wp), dimension(:,:,:), target, allocatable :: flux_up, flux_dn
   real(wp), dimension(:,:), allocatable :: & ! block_size, nblocks
     surface_albedo, total_solar_irradiance, solar_zenith_angle, &
-    emiss_sfc, t_sfc, doy
-  real(wp), dimension(:,:), allocatable :: & ! 1 x 1 "arrays"
-    alb_1, tsi_1, sza_1, t_sfc_1
+    emiss_sfc, t_sfc, conc
 
   logical , dimension(:  ), allocatable :: usecol ! block_size
 
@@ -125,7 +123,7 @@ program rrtmg_rfmip_sw
   call read_and_block_pt(rfmip_file, block_size, p_lay, p_lev, &
     t_lay, t_lev)
   call read_and_block_sw_bc(rfmip_file, block_size, &
-    surface_albedo, total_solar_irradiance, solar_zenith_angle, doy)
+    surface_albedo, total_solar_irradiance, solar_zenith_angle)
 
   ! RRTMG needs surface T
   call read_and_block_lw_bc(rfmip_file, block_size, emiss_sfc, t_sfc)
@@ -133,18 +131,24 @@ program rrtmg_rfmip_sw
   ! are we going surface to TOA or TOA to surface?
   top_at_1 = p_lay(1, 1, 1) < p_lay(1, nlay, 1)
 
+  ! RRTMGP won't run with pressure less than its minimum. The top 
+  ! level in the RFMIP file is set to 10^-3 Pa. Here we pretend the 
+  ! layer is just a bit less deep. This introduces an error but shows 
+  ! input sanitizing. Pernak: just going with 10**-3
+  if(top_at_1) then
+    p_lev(:,1,:) = 1e-3
+  else
+    p_lev(:,nlay+1,:) = 1e-3
+  end if
+
   allocate(flux_up(block_size, nlay+1, nblocks), &
     flux_dn(block_size, nlay+1, nblocks))
   allocate(usecol(block_size))
 
   ! RRTMG output arrays
-  allocate(swuflx(1, nlay+1), swdflx(1, nlay+1), &
-    swuflxc(1, nlay+1), swdflxc(1, nlay+1), &
-    swhr(1, nlay), swhrc(1, nlay))
-
-  ! 1 x 1 arrays for parameters of a given experiment and profile
-  ! need array for RRTMG input
-  allocate(alb_1(1,1), tsi_1(1,1), sza_1(1,1), t_sfc_1(1,1)
+  allocate(swuflx(block_size, nlay+1), swdflx(block_size, nlay+1), &
+    swuflxc(block_size, nlay+1), swdflxc(block_size, nlay+1), &
+    swhr(block_size, nlay), swhrc(block_size, nlay))
 
   ! Names of gases known to the k-distribution.
   ! Which gases will be included in the calculation?
@@ -165,7 +169,7 @@ program rrtmg_rfmip_sw
     co(block_size, nlay), ch4(block_size, nlay), &
     o2(block_size, nlay), n2(block_size, nlay))
 
-  allocate(dum2D(1, nlay+1), dum3D(1, nlay, nband))
+  allocate(dum2D(block_size, nlay+1), dum3D(block_size, nlay, nband))
   dum2D(:,:) = 0._wp
   dum3D(:,:,:) = 0._wp
 
@@ -196,33 +200,39 @@ program rrtmg_rfmip_sw
     ! rrtmg_sw_rad.f90 doc)
     ! RRTMG inputs have to be surface to TOA
 
+    ret =  gptlstart('RRTMG (SW)')
+    call rrtmg_sw(block_size, nlay, dumInt, dumInt , &
+      p_lay(:,nlay:1:-1,b)/100.0, p_lev(:,nlay+1:1:-1,b)/100.0, &
+      t_lay(:,nlay:1:-1,b), t_lev(:,nlay+1:1:-1,b), t_sfc(:,b), &
+      h2o(:,nlay:1:-1), o3(:,nlay:1:-1), co2(:,nlay:1:-1), &
+      ch4(:,nlay:1:-1), n2o(:,nlay:1:-1), o2(:,nlay:1:-1), &
+      surface_albedo(:,b), surface_albedo(:,b), &
+      surface_albedo(:,b), surface_albedo(:,b), &
+      cosd(solar_zenith_angle(:,b)), 0._wp, 1, 0._wp, 0, &
+      0, 0, 0, dum3D, &
+      dum3D, dum3D, dum3D, dum3D, &
+      dum3D, dum3D, dum2D, dum2D, &
+      dum3D, dum3D, dum3D, dum3D, &
+      flux_up(:,:,b), flux_dn(:,:,b), swhr, swuflxc, swdflxc, swhrc)
+    ret =  gptlstop('RRTMG (SW)')
+
     do icol = 1, block_size
-      alb_1(1,1) = surface_albedo(icol,b)
-      tsi_1(1,1) = total_solar_irradiance(icol,b)
-      sza_1(1,1) = solar_zenith_angle(icol,b)
-      t_sfc_1(1,1) = t_sfc(icol,b)
-
-      ret =  gptlstart('RRTMG (SW)')
-      call rrtmg_sw(1, nlay, dumInt, dumInt , &
-        p_lay(icol,nlay:1:-1,b)/100.0, p_lev(icol,nlay+1:1:-1,b)/100.0, &
-        t_lay(icol,nlay:1:-1,b), t_lev(icol,nlay+1:1:-1,b), t_sfc_1, &
-        h2o(icol,nlay:1:-1), o3(icol,nlay:1:-1), co2(icol,nlay:1:-1), &
-        ch4(icol,nlay:1:-1), n2o(icol,nlay:1:-1), o2(icol,nlay:1:-1), &
-        alb_1, alb_1, alb_1, alb_1, &
-        cosd(sza_1), 0._wp, int(doy(icol,b)), 0._wp, 0, &
-        0, 0, 0, dum3D, &
-        dum3D, dum3D, dum3D, dum3D, &
-        dum3D, dum3D, dum2D, dum2D, &
-        dum3D, dum3D, dum3D, dum3D, &
-        flux_up(icol,:,b), flux_dn(icol,:,b), swhr, swuflxc, swdflxc, swhrc)
-
+      ! zero out dayttime profile fluxes
       if(.not. usecol(icol)) then
         flux_up(icol,:,b)  = 0._wp
         flux_dn(icol,:,b)  = 0._wp
         cycle
       end if
-      ret =  gptlstop('RRTMG (SW)')
-    enddo ! columns
+
+      ! got the 1360.85 from Eli:
+      ! https://rrtmgp2.slack.com/archives/D942AU7QE/p1525442449000187
+!      tsi_scale = total_solar_irradiance(icol,b) / 1360.85
+
+!      do ilev = 1, nlay+1
+!        flux_up(iCol, ilev, b) = flux_up(iCol, ilev, b) / tsi_scale
+!        flux_dn(iCol, ilev, b) = flux_dn(iCol, ilev, b) / tsi_scale
+!      enddo ! levels
+    end do ! columns
 
   end do ! blocks
 
