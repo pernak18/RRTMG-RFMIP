@@ -3,4 +3,7 @@
 *.nc
 dep/*.*
 obsolete
-
+*.csv
+*.tgz
+GPTL*
+README
