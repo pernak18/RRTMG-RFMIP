@@ -1,5 +1,6 @@
 # Location of RTE+RRTMGP libraries, module files.
-RRTMGP_DIR = ../../../build
+#RRTMGP_DIR = ../../../build
+RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_dev/build
 
 # Sets macros FC, FCFLAGS consistent with RTE+RRTMGP
 include $(RRTMGP_DIR)/Makefile.conf
@@ -132,7 +133,7 @@ rrtmg_sw_k_g.o: rrtmg_sw_k_g.f90 rrsw_kg16.o rrsw_kg17.o rrsw_kg18.o rrsw_kg19.o
 rrtmg_sw: clean rrtmg_rfmip_sw tidy
 
 tidy:
-	-mv -f *.o dep; mv -f *.mod dep
+	-mv -f *.o dep; mv -f *.mod dep; rm *.optrpt
 
 clean:
 	-rm rrtmg_rfmip_sw dep/*.o dep/*.mod

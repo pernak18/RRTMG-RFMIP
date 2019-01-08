@@ -1,5 +1,6 @@
 # Location of RTE+RRTMGP libraries, module files.
-RRTMGP_DIR = ../../../build
+#RRTMGP_DIR = ../../../build
+RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_dev/build
 
 # Sets macros FC, FCFLAGS consistent with RTE+RRTMGP
 include $(RRTMGP_DIR)/Makefile.conf
@@ -136,7 +137,7 @@ util_linux_intel.f90: util_linux_intel.o
 rrtmg_lw: clean rrtmg_rfmip_lw tidy
 
 tidy:
-	-mv -f *.o dep; mv -f *.mod dep
+	-mv -f *.o dep; mv -f *.mod dep; rm *.optrpt
 
 clean:
 	-rm rrtmg_rfmip_lw dep/*.o dep/*.mod

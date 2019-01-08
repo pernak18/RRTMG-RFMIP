@@ -7,3 +7,7 @@ obsolete
 *.tgz
 GPTL*
 README
+../../common/
+RFMIP_wrapper.py
+stats_RRTMG_vs_RRTMGP.py
+*/timing_iter*
