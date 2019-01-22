@@ -6,10 +6,16 @@ from __future__ import print_function
 import os, sys, glob
 import numpy as np
 
-sys.path.append('/home/rpernak/python/GIT_python_modules')
+sys.path.append('common')
 import utils
 
-TOPDIR = '/rd47/scratch/RRTMGP/RRTMGP_Git/examples/rfmip-clear-sky'
+RRTMGP_ROOT = os.getenv('RRTMGP_ROOT')
+if RRTMGP_ROOT is None:
+  print('Please set RRTMGP_ROOT environment variable')
+  sys.exit(1)
+else:
+  TOPDIR = '%s/examples/rfmip-clear-sky' % RRTMGP_ROOT
+# endif RRTMGP_ROOT
 
 class timingGPTL():
   def __init__(self, inDir, rrtmgp=False):

@@ -1,23 +1,24 @@
 # Location of RTE+RRTMGP libraries, module files.
-#RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_Master/build
-RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_dev/build
+#RRTMGP_BUILD = /rd47/scratch/RRTMGP/RRTMGP_Git_Master/build
+#RRTMGP_BUILD = /rd47/scratch/RRTMGP/RRTMGP_Git_dev/build
+RRTMGP_BUILD = $(RRTMGP_ROOT)/build
 
 # Sets macros FC, FCFLAGS consistent with RTE+RRTMGP
-include $(RRTMGP_DIR)/Makefile.conf
+include $(RRTMGP_BUILD)/Makefile.conf
 
 # RRTMGP library, module files
-LDFLAGS   += -L$(RRTMGP_DIR)
+LDFLAGS   += -L$(RRTMGP_BUILD)
 LIBS      += -lrrtmgp -lrte
-FCINCLUDE += -I$(RRTMGP_DIR)
+FCINCLUDE += -I$(RRTMGP_BUILD)
 
 # netcdf library, module files
 # C and Fortran interfaces respectively
 #
 # Timing library (apparently v5.5.3 extension matters)
-TIME_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git/examples/rfmip-clear-sky/GPTL-v5.5.3
+#TIME_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git/examples/rfmip-clear-sky/GPTL-v5.5.3
 
-NCHOME = /nas/project/p1770/dependencies
-NFHOME = /nas/project/p1770/dependencies
+#NCHOME = /nas/project/p1770/dependencies
+#NFHOME = /nas/project/p1770/dependencies
 FCINCLUDE += -I$(NFHOME)/include -I$(TIME_DIR)/include
 LDFLAGS   += -L$(NFHOME)/lib -L$(NCHOME)/lib -L$(TIME_DIR)/lib
 LIBS      += -lnetcdff -lnetcdf -lgptl

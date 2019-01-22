@@ -12,7 +12,8 @@ if RRTMGP_ROOT is None:
   sys.exit(1)
 # endif RRTMGP_ROOT
 
-sys.path.append('/home/rpernak/python/GIT_python_modules')
+# GIT submodule
+sys.path.append('common')
 import utils
 
 class driverRFMIP():
