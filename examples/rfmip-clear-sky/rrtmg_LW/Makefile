@@ -1,5 +1,5 @@
 # Location of RTE+RRTMGP libraries, module files.
-#RRTMGP_DIR = ../../../build
+#RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_Master/build
 RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_dev/build
 
 # Sets macros FC, FCFLAGS consistent with RTE+RRTMGP
@@ -51,7 +51,7 @@ LWADDITIONS += rrlw_kg05.o rrlw_kg06.o rrlw_kg07.o rrlw_kg08.o
 LWADDITIONS += rrlw_kg09.o rrlw_kg10.o rrlw_kg11.o rrlw_kg12.o 
 LWADDITIONS += rrlw_kg13.o rrlw_kg14.o rrlw_kg15.o rrlw_kg16.o 
 LWADDITIONS += rrtmg_lw_rad.o rrtmg_lw_cldprmc.o rrtmg_lw_init.o
-LWADDITIONS += rrtmg_lw_read_nc.o rrlw_ncpar.o rrtmg_lw_rtrnmr.o 
+LWADDITIONS += rrtmg_lw_k_g.o rrlw_ncpar.o rrtmg_lw_rtrnmr.o 
 LWADDITIONS += rrtmg_lw_rtrnmc.o rrtmg_lw_rtrn.o util_linux_intel.o
 
 rrtmg_rfmip_lw:   rrtmg_rfmip_lw.o $(ADDITIONS) $(LWADDITIONS)
@@ -60,7 +60,7 @@ rrtmg_rfmip_lw.o: rrtmg_rfmip_lw.F90 $(ADDITIONS) $(LWADDITIONS)
 
 rrtmg_lw_rad.o: rrtmg_lw_rad.f90 mcica_subcol_gen_lw.o rrtmg_lw_cldprmc.o rrtmg_lw_init.o rrtmg_lw_rtrnmr.o rrtmg_lw_rtrnmc.o rrtmg_lw_rtrn.o
 
-rrtmg_lw_init.o: rrtmg_lw_init.f90 rrlw_con.o rrlw_wvn.o rrlw_kg01.o rrlw_kg02.o rrlw_kg03.o rrlw_kg04.o rrlw_kg05.o rrlw_kg06.o rrlw_kg07.o rrlw_kg08.o rrlw_kg09.o rrlw_kg10.o rrlw_kg11.o rrlw_kg12.o rrlw_kg13.o rrlw_kg14.o rrlw_kg15.o rrlw_kg16.o rrtmg_lw_read_nc.o
+rrtmg_lw_init.o: rrtmg_lw_init.f90 rrlw_con.o rrlw_wvn.o rrlw_kg01.o rrlw_kg02.o rrlw_kg03.o rrlw_kg04.o rrlw_kg05.o rrlw_kg06.o rrlw_kg07.o rrlw_kg08.o rrlw_kg09.o rrlw_kg10.o rrlw_kg11.o rrlw_kg12.o rrlw_kg13.o rrlw_kg14.o rrlw_kg15.o rrlw_kg16.o rrtmg_lw_k_g.o
 
 rrtmg_lw_rtrn.o: rrtmg_lw_rtrn.f90
 
@@ -128,7 +128,7 @@ rrlw_ncpar.o: rrlw_ncpar.f90
 
 mcica_random_numbers.o: mcica_random_numbers.f90 parkind.o
 
-rrtmg_lw_read_nc.o: rrtmg_lw_read_nc.f90 rrlw_kg01.o rrlw_kg02.o rrlw_kg03.o rrlw_kg04.o rrlw_kg05.o rrlw_kg06.o rrlw_kg07.o rrlw_kg08.o rrlw_kg09.o rrlw_kg10.o rrlw_kg11.o rrlw_kg12.o rrlw_kg13.o rrlw_kg14.o rrlw_kg15.o rrlw_kg16.o rrlw_ncpar.o
+rrtmg_lw_k_g.o: rrtmg_lw_k_g.f90 rrlw_kg01.o rrlw_kg02.o rrlw_kg03.o rrlw_kg04.o rrlw_kg05.o rrlw_kg06.o rrlw_kg07.o rrlw_kg08.o rrlw_kg09.o rrlw_kg10.o rrlw_kg11.o rrlw_kg12.o rrlw_kg13.o rrlw_kg14.o rrlw_kg15.o rrlw_kg16.o rrlw_ncpar.o
 
 rrtmg_lw_k_g.o: rrtmg_lw_k_g.f90
 

@@ -1,5 +1,5 @@
 # Location of RTE+RRTMGP libraries, module files.
-#RRTMGP_DIR = ../../../build
+#RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_Master/build
 RRTMGP_DIR = /rd47/scratch/RRTMGP/RRTMGP_Git_dev/build
 
 # Sets macros FC, FCFLAGS consistent with RTE+RRTMGP
