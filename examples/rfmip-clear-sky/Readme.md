@@ -20,6 +20,7 @@ export TIME_DIR=/rd47/scratch/RRTMGP/RRTMGP_Git/examples/rfmip-clear-sky/GPTL-v5
 
 ```
 git clone --recursive git@github.com:pernak18/rte-rrtmgp.git RRTMG
+git checkout rrtmg
 cd RRTMG
 export RRTMG=`pwd`
 ```
