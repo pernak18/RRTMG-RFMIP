@@ -6,9 +6,6 @@ from __future__ import print_function
 import os, sys, glob
 import numpy as np
 
-sys.path.append('common')
-import utils
-
 RRTMGP_ROOT = os.getenv('RRTMGP_ROOT')
 if RRTMGP_ROOT is None:
   print('Please set RRTMGP_ROOT environment variable')
@@ -17,8 +14,11 @@ else:
   TOPDIR = '%s/examples/rfmip-clear-sky' % RRTMGP_ROOT
 # endif RRTMGP_ROOT
 
+sys.path.append('%s/common' % RRTMGP_ROOT)
+import utils
+
 class timingGPTL():
-  def __init__(self, inDir, rrtmgp=False):
+  def __init__(self, inDir, rrtmgp=False, sw=False):
     """
     Read in timing.*.*.* files that were generated in either the 
     RRTMG or RRTMGP drivers, then calculate the moments (over the 
@@ -39,6 +39,14 @@ class timingGPTL():
       np.array([os.path.basename(inFile).split('.')[2] \
         for inFile in self.inFiles]).astype(int)
     self.blockSizes = np.unique(self.allBlockSizes)
+
+    # wall clock search strings for the timing logs
+    domain = 'sw' if sw else 'lw'
+    if rrtmgp:
+      self.clockStrings = \
+        ['  gas_optics (%s)' % domain.upper(), 'rte_%s' % domain]
+    else:
+      self.clockStrings = ['  RRTMG (%s)' % domain.upper()]
   # end constructor
 
   def extractTime(self):
@@ -49,10 +57,20 @@ class timingGPTL():
 
     # making some assumptions about GPTL output here -- i.e., that it
     # is uniform over all trials and block sizes
-    iRec = [40, 41] if self.modelStr == 'RRTMGP' else [40]
+    #iRec = [40, 41] if self.modelStr == 'RRTMGP' else [40]
     wallClock = []
     for inFile in self.inFiles:
-      dat = np.array(open(inFile).read().splitlines())[iRec]
+      dat = np.array(open(inFile).read().splitlines())
+
+      iRec = []
+      for iLine, line in enumerate(dat):
+        for cStr in self.clockStrings:
+          if cStr in line: iRec.append(iLine)
+        # end clock string loop
+      # end record loop
+
+      dat = dat[iRec]
+
       if self.modelStr == 'RRTMGP':
         iWallClock = 4
         wallClock.append(float(dat[0].split()[iWallClock]) + \
@@ -126,7 +144,7 @@ if __name__ == '__main__':
   for runDir, gpBoo, swBoo in zip(allDir, gpBool, swBool):
     runStr = '%s_%s' % \
       ('RRTMGP' if gpBoo else 'RRTMG', 'SW' if swBoo else 'LW')
-    runObj = timingGPTL(runDir, rrtmgp=gpBoo)
+    runObj = timingGPTL(runDir, rrtmgp=gpBoo, sw=swBoo)
     runObj.extractTime()
     runObj.calcMoments()
     meanDict[runStr] = runObj.means
