@@ -6,15 +6,8 @@ from __future__ import print_function
 import os, sys, glob
 import numpy as np
 
-RRTMGP_ROOT = os.getenv('RRTMGP_ROOT')
-if RRTMGP_ROOT is None:
-  print('Please set RRTMGP_ROOT environment variable')
-  sys.exit(1)
-else:
-  TOPDIR = '%s/examples/rfmip-clear-sky' % RRTMGP_ROOT
-# endif RRTMGP_ROOT
-
-sys.path.append('%s/common' % RRTMGP_ROOT)
+# GIT submodule
+sys.path.append('common')
 import utils
 
 class timingGPTL():

@@ -6,12 +6,6 @@ from __future__ import print_function
 import os, sys
 import subprocess as sub
 
-RRTMGP_ROOT = os.getenv('RRTMGP_ROOT')
-if RRTMGP_ROOT is None:
-  print('Please set RRTMGP_ROOT environment variable')
-  sys.exit(1)
-# endif RRTMGP_ROOT
-
 # GIT submodule
 sys.path.append('common')
 import utils
@@ -57,9 +51,8 @@ if __name__ == '__main__':
     'given number of iterations and block sizes. It is assumed ' + \
     'the driver implements GPTL and writes timing information to ' + \
     'timing.block_size files.')
-  parser.add_argument('-e', '--exe', type=str, \
-    default='%s/examples/rfmip-clear-sky/SW/rrtmg_rfmip_sw' % \
-    RRTMGP_ROOT, help='Full path to driver executable.')
+  parser.add_argument('-e', '--exe', type=str, default='rrtmg_rfmip_sw' % \
+    help='Full path to driver executable.')
   parser.add_argument('-b', '--block_size', type=int, nargs='+', \
     default=[4, 8, 100, 1800], \
     help='Size of memory blocks for computation.')
