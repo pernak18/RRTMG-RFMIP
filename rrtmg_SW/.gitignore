@@ -1,0 +1,9 @@
+*.o
+*.mod
+*.nc
+rrtmg_rfmip_sw
+dep/*.*
+timing_iter*/
+sanity_check.py
+*.tgz
+

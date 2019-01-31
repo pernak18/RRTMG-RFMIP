@@ -1,0 +1,14 @@
+*.o
+*.mod
+*.nc
+dep/*.*
+obsolete
+*.csv
+*.tgz
+GPTL*
+README
+../../common/
+*/timing_iter*
+rrtmg_LW
+rrtmg_SW
+

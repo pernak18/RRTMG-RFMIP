@@ -1,9 +1,0 @@
-*.o
-*.mod
-*.nc
-*.tgz
-timing_iter*/
-rrtmg_rfmip_lw
-dep/*.*
-sanity_check.py
-
