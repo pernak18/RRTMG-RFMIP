@@ -7,14 +7,18 @@ sys.path.append('common')
 import utils
 
 class driverRRTMGLW:
-  def __init__(self, inFile, exe):
+  def __init__(self, inFile, exe, outDir):
     """
     `run_RRTMG_LW.py -h`
     """
 
     self.inFile = str(inFile)
     self.exe = str(exe)
+    paths = [self.inFile, self.exe]
     for path in paths: utils.file_check(path)
+
+    self.outDir = str(outDir)
+    if not os.path.exists(self.outDir): os.makedirs(self.outDir)
   # end constructor
 
   def runRRTMG(self):
@@ -22,8 +26,11 @@ class driverRRTMGLW:
     Run RRTMG LW on RFMIP profiles
     """
 
-    os.symlink(inFile, 'INPUT_RRTM')
+    iRRTMG = 'INPUT_RRTM'
+    if os.path.exists(iRRTMG): os.remove(iRRTMG)
+    os.symlink(inFile, iRRTMG)
     sub.call([self.exe])
+    os.remove(iRRTMG)
   # end runRRTGM()
 
   def rename(self):
@@ -32,7 +39,10 @@ class driverRRTMGLW:
     """
 
     oRRTMG = 'OUTPUT_RRTM'
-    os.rename(oRRTMG, self.inFile.replace('INPUT_RRTM', oRRTMG))
+    base = os.path.basename(self.inFile).replace('INPUT_RRTM', oRRTMG)
+    outFile = '{}/{}'.format(self.outDir, base)
+    os.rename(oRRTMG, outFile)
+    print('Finished {}'.format(outFile))
   # end rename
 # end driverRRTMGLW
 
@@ -48,18 +58,20 @@ if __name__ == '__main__':
     'profiles. This directory is likely for an entire experiment.')
   parser.add_argument('--exe_path', '-x', type=str, \
     default='rrtmg_lw', help='Path to RRTMG_LW executable.')
+  parser.add_argument('--outdir', '-o', type=str, \
+    default='OUTPUT_RRTMG/PD', \
+    help='Directory into which OUTPUT_RRTM files are moved.')
   args = parser.parse_args()
 
   inDir = args.input_dir; utils.file_check(inDir)
-  inFiles = glob.glob('{}/INPUT_RRTM_*'.format(inDir))
+  inFiles = sorted(glob.glob('{}/INPUT_RRTM_*'.format(inDir)))
   if len(inFiles) == 0:
     print('Found no RRTMG_LW inputs in {}'.format())
     sys.exit(1)
   # endif nFiles
 
   for inFile in inFiles:
-    rObj = driverRRTMGLW(inFile, args.exe_path)
-    rObj.getInputs()
+    rObj = driverRRTMGLW(inFile, args.exe_path, args.outdir)
     rObj.runRRTMG()
     rObj.rename()
   # end inFile loop
